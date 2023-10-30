@@ -7,7 +7,12 @@ require('dotenv').config();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors())
+app.use(cors({
+    origin: [
+        'http://localhost:5173'
+    ],
+    credentials: true
+}))
 app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.3al0nc5.mongodb.net/?retryWrites=true&w=majority`;
@@ -35,7 +40,22 @@ async function run() {
             const user = req.body;
             const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '2h' })
 
-            res.send({ token });
+            res
+                .cookie('carToken', token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'none'
+                })
+                .send({ success: true });
+        })
+
+        app.post('/logout', async (req, res) => {
+            const user = req.body;
+            res
+                .clearCookie('carToken', {
+                    maxAge: 0
+                })
+                .send({ success: true })
         })
 
         // service related api

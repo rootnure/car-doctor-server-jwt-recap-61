@@ -15,5 +15,10 @@
 
 /**
  * 1. JWT --> Json Web Token
+ * 2. jwt.sign() --> generate a token
+ * 3. create api set to cookie. httpOnly, secure, sameSite
+ * 4. from client side: axios --> { withCredentials: true }
+ * 5. cors setup origin and { credentials: true }
+ * 6. 
  * 
  */
