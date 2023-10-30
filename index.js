@@ -61,7 +61,7 @@ async function run() {
         // auth related api
         app.post('/jwt', async (req, res) => {
             const user = req.body;
-            const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '2h' })
+            const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '10s' })
 
             res
                 .cookie('carToken', token, {
