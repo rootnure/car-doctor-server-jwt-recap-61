@@ -37,17 +37,16 @@ const logger = (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
     const token = req?.cookies?.carToken;
-    console.log('token in the middleware', token);
-    // if (!token) {
-    //     return res.status(401).send({ msg: 'Unauthorized access' });
-    // }
-    // jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    //     if (err) {
-    //         return res.status(401).send({ msg: 'Unauthorized access' });
-    //     }
-    //     req.decoded = decoded;
-    next();
-    // })
+    if (!token) {
+        return res.status(401).send({ msg: 'Unauthorized access' });
+    }
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ msg: 'Unauthorized access' });
+        }
+        req.decoded = decoded;
+        next();
+    })
 }
 
 async function run() {
@@ -118,6 +117,9 @@ async function run() {
 
         app.get('/bookings', logger, verifyToken, async (req, res) => {
             console.log(req.query.email);
+            if (req.decoded.email !== req.query.email) {
+                return res.status(403).send({ msg: 'Forbidden access' });
+            }
             let query = {};
             if (req.query?.email) {
                 query = { email: req.query.email }
