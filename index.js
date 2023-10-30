@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -12,8 +13,9 @@ app.use(cors({
         'http://localhost:5173'
     ],
     credentials: true
-}))
-app.use(express.json())
+}));
+app.use(express.json());
+app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.3al0nc5.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -25,6 +27,28 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     }
 });
+
+// custom middlewares
+const logger = (req, res, next) => {
+    console.log('log info:', req.method, req.url);
+
+    next();
+}
+
+const verifyToken = (req, res, next) => {
+    const token = req?.cookies?.carToken;
+    console.log('token in the middleware', token);
+    // if (!token) {
+    //     return res.status(401).send({ msg: 'Unauthorized access' });
+    // }
+    // jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    //     if (err) {
+    //         return res.status(401).send({ msg: 'Unauthorized access' });
+    //     }
+    //     req.decoded = decoded;
+    next();
+    // })
+}
 
 async function run() {
     try {
@@ -92,7 +116,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/bookings', async (req, res) => {
+        app.get('/bookings', logger, verifyToken, async (req, res) => {
             console.log(req.query.email);
             let query = {};
             if (req.query?.email) {
